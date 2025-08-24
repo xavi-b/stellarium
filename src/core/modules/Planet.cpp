@@ -1725,9 +1725,19 @@ double Planet::getRotObliquity(double JDE) const
 {
 	// JDE=2451545.0 for J2000.0
 	if (englishName==L1S("Earth"))
-		return getPrecessionAngleVondrakEpsilon(JDE);
+        return getPrecessionAngleVondrakEpsilon(JDE) + rotObliquityOffset;
 	else
 		return static_cast<double>(re.obliquity);
+}
+
+double Planet::getRotObliquityOffset() const
+{
+    return rotObliquityOffset;
+}
+
+void Planet::setRotObliquityOffset(double offset)
+{
+    rotObliquityOffset = offset * M_PI / 180;
 }
 
 // Find out if p casts a shadow onto thisPlanet
@@ -1867,7 +1877,7 @@ void Planet::computeTransMatrix(double JD, double JDE)
 			getNutationAngles(JDE, &deltaPsi, &deltaEps);
 			//qDebug() << "deltaEps, arcsec" << deltaEps*180./M_PI*3600. << "deltaPsi" << deltaPsi*180./M_PI*3600.;
 			// Note: The sign for zrotation(-deltaPsi) was suggested by email by German Marques 2020-05-28 who referred to the SOFA library also used in Stellarium Web. This is then also ExplanSup3rd, 6.41.
-			Mat4d nut2000B=Mat4d::xrotation(eps_A) * Mat4d::zrotation(-deltaPsi)* Mat4d::xrotation(-eps_A-deltaEps); // eq.21 in Hilton et al. wrongly had a positive deltaPsi rotation.
+            Mat4d nut2000B=Mat4d::xrotation(eps_A + rotObliquityOffset) * Mat4d::zrotation(-deltaPsi)* Mat4d::xrotation(-eps_A-deltaEps); // eq.21 in Hilton et al. wrongly had a positive deltaPsi rotation.
 			rotLocalToParent=rotLocalToParent*nut2000B;
 		}
 		return;

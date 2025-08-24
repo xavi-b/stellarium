@@ -404,6 +404,10 @@ public:
 	//! Note: The only place where this is not used for Earth is to build up orbits for planet moons w.r.t. the parent planet orientation.
 	double getRotObliquity(double JDE) const;
 
+        double getRotObliquityOffset() const;
+
+        void setRotObliquityOffset(double offset);
+
 	//! Compute the position and orbital velocity in the parent Planet coordinate system and set aberrationPush
 	//! In case of the Sun, it is the heliocentric position and velocity so zeros are set
 	//! Does not compute new position when dateJDE is less than deltaJDE away from lastJDE
@@ -825,6 +829,8 @@ protected:
 					 //!< it is used for sorting while drawing
 	double sphereScale;              //!< Artificial scaling for better viewing.
 	double lastJDE;                  //!< caches JDE of last positional computation
+
+        double rotObliquityOffset = 0.0;
 
 	posFuncType coordFunc;           //!< callback for the calculation of the equatorial rectangular heliocentric position at time JDE.
 	Orbit* orbitPtr;                 //!< Usually a KeplerOrbit for positional computations of Minor Planets, Comets and Moons.

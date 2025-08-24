@@ -20,10 +20,14 @@ Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335, USA.
 #include "Oculars.hpp"
 #include "OcularsGuiPanel.hpp"
 #include "StelApp.hpp"
+#include "StelCore.hpp"
 #include "StelGuiItems.hpp"
+#include "StelMainView.hpp"
 #include "StelTranslator.hpp"
 #include "StelActionMgr.hpp"
+#include "StelModuleMgr.hpp"
 
+#include <QDoubleSpinBox>
 #include <QGridLayout>
 #include <QGraphicsLinearLayout>
 #include <QGraphicsPathItem>
@@ -47,8 +51,24 @@ OcularsGuiPanel::OcularsGuiPanel(Oculars* plugin,
 	//First create the layout and populate it, then set it?
 	mainLayout = new QGraphicsLinearLayout(Qt::Vertical);
 
+        // Custom bar
+        QGraphicsLinearLayout* customBar = new QGraphicsLinearLayout(Qt::Horizontal);
+        QDoubleSpinBox* spinBox = new QDoubleSpinBox;
+        spinBox->setRange(-180, 180);
+        connect(spinBox, &QDoubleSpinBox::editingFinished, this, [=](){
+                static SolarSystem *ssystem=GETSTELMODULE(SolarSystem);
+                PlanetP earth = ssystem->getEarth();
+                earth->setRotObliquityOffset(spinBox->value());
+                StelApp *app = &StelApp::getInstance();
+                StelCore *core = app->getCore();
+                ssystem->computePositions(core, core->getJDE(), core->getCurrentPlanet());
+        });
+        QGraphicsWidget *spinBoxGraphics = StelMainView::getInstance().scene()->addWidget(spinBox);
+        customBar->addItem(spinBoxGraphics);
+        mainLayout->addItem(customBar);
+
 	//Button bar
-	buttonBar = new QGraphicsWidget();
+        buttonBar = new QGraphicsWidget();
 	mainLayout->addItem(buttonBar);
 
 	StelApp& stelApp = StelApp::getInstance();
@@ -925,7 +945,7 @@ void OcularsGuiPanel::setLensControlsVisible(bool show)
 		if (!lensControls->isVisible())
 		{
 			lensControls->setVisible(true);
-			mainLayout->insertItem(3, lensControls);
+                        mainLayout->insertItem(4, lensControls);
 		}
 	}
 	else
@@ -948,7 +968,7 @@ void OcularsGuiPanel::setOcularControlsVisible(bool show)
 		if (!ocularControls->isVisible())
 		{
 			ocularControls->setVisible(true);
-			mainLayout->insertItem(1, ocularControls);
+                        mainLayout->insertItem(2, ocularControls);
 		}
 	}
 	else
@@ -970,7 +990,7 @@ void OcularsGuiPanel::setCcdControlsVisible(bool show)
 		if (!ccdControls->isVisible())
 		{
 			ccdControls->setVisible(true);
-			mainLayout->insertItem(1, ccdControls);
+                        mainLayout->insertItem(2, ccdControls);
 		}
 	}
 	else
@@ -990,7 +1010,7 @@ void OcularsGuiPanel::setTelescopeControlsVisible(bool show)
 		if (!telescopeControls->isVisible())
 		{
 			telescopeControls->setVisible(true);
-			mainLayout->insertItem(2, telescopeControls);
+                        mainLayout->insertItem(3, telescopeControls);
 		}
 	}
 	else
